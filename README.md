@@ -1,48 +1,138 @@
-# vuejs-masterclass-2024
+# Vue 3 + Docker Setup
 
-This template should help get you started developing with Vue 3 in Vite.
+This project demonstrates a **standard Vue 3 (Vite) frontend-only setup using Docker**.
 
-## Recommended IDE Setup
+No backend, no database — just Vue running in a Docker container for a consistent development environment.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Recommended Browser Setup
+## 📦 Requirements
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+You need **only these installed on your machine**:
 
-## Type Support for `.vue` Imports in TS
+* **Docker** (Docker Desktop or Docker Engine)
+* **Git**
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+> ❗ Node.js is **not required** to run the app with Docker, but **is required** if you want to create or manage the project locally.
 
-## Customize configuration
+---
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 📁 Project Structure
 
-## Project Setup
-
-```sh
-npm install
+```text
+vue-project/
+├── Dockerfile
+├── .dockerignore
+├── package.json
+├── package-lock.json
+├── vite.config.js
+├── index.html
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── views/
+│   ├── App.vue
+│   └── main.js
+└── README.md
 ```
 
-### Compile and Hot-Reload for Development
+---
 
-```sh
-npm run dev
+## 🐳 Docker Setup
+
+### Dockerfile
+
+```dockerfile
+FROM node:20.19-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host"]
 ```
 
-### Type-Check, Compile and Minify for Production
+### .dockerignore
 
-```sh
-npm run build
+```text
+node_modules
+dist
+.git
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+---
 
-```sh
-npm run lint
+## ▶️ Run the Project with Docker
+
+### 1️⃣ Build the Docker image
+
+```bash
+docker build -t vue-app .
 ```
+
+### 2️⃣ Run the container
+
+```bash
+docker run -p 5173:5173 vue-app
+```
+
+> We map **host port 5174 → container port 5173** so multiple Vue apps can run at the same time.
+
+### 3️⃣ Open in browser
+
+```text
+http://localhost:5174
+```
+
+---
+
+## 🔁 Rebuilding After Changes
+
+If you change:
+
+* `package.json`
+* `Dockerfile`
+
+You must rebuild:
+
+```bash
+docker build --no-cache -t vue-app .
+```
+
+Then run again:
+
+```bash
+docker run -p 5174:5173 vue-app
+```
+
+---
+
+## 🧠 Important Notes
+
+* Vite **must** run with `--host` inside Docker
+* `EXPOSE` does **not** change the port — it only documents it
+* Docker port mapping decides which port you access on your machine
+
+---
+
+## 🛠 Common Commands
+
+```bash
+# List running containers
+docker ps
+
+# Stop all containers
+docker stop $(docker ps -q)
+
+# Remove all containers
+docker rm $(docker ps -aq)
+
+# View logs
+docker logs <container-name>
+```
+
+---
